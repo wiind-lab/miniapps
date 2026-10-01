@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>소수·분수 스피드 퀴즈</title>
+<style>
+:root{
+  --bg:#eef4ff;--card:#fff;--text:#172033;--muted:#667085;
+  --primary:#356ae6;--primary-dark:#2452bd;--border:#d8e2f2;
+  --good:#16845b;--bad:#d04444;--soft:#f5f8ff;
+  --key:#eaf1ff;--key-text:#244c9c;--shadow:0 14px 36px rgba(35,68,125,.12);
+  --radius:24px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--text)}
+button{font:inherit}
+.miniapp{min-height:100vh;display:flex;flex-direction:column;padding:16px;gap:12px}
+.app-header,.app-main,.app-controls,.app-footer{width:100%;max-width:1180px;margin:0 auto}
+.app-header{display:flex;justify-content:space-between;align-items:center;gap:16px}
+.title-group h1{margin:0;font-size:clamp(1.75rem,4vw,3.1rem);letter-spacing:-.04em}
+.title-group p{margin:4px 0 0;color:var(--muted);font-size:clamp(.95rem,1.8vw,1.15rem)}
+.app-tag{padding:8px 14px;border-radius:999px;background:#fff;border:1px solid var(--border);color:var(--muted);font-weight:800;white-space:nowrap}
+.app-main{flex:1;display:flex;align-items:stretch}
+.activity-card{width:100%;min-height:570px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:clamp(16px,2.5vw,30px);display:flex;flex-direction:column}
+.start-screen,.result-screen{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:17px}
+.start-icon{font-size:clamp(3.6rem,9vw,6.5rem);line-height:1;font-weight:950;color:var(--primary)}
+.start-screen h2,.result-screen h2{margin:0;font-size:clamp(2rem,5vw,3.7rem);letter-spacing:-.04em}
+.start-screen p{margin:0;max-width:760px;color:var(--muted);font-size:clamp(1rem,2.1vw,1.3rem);line-height:1.6}
+.rule-box{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;width:min(790px,100%)}
+.rule{padding:14px 12px;border-radius:16px;background:var(--soft);font-weight:850;color:#40506a}
+.nickname-box{width:min(520px,100%);display:flex;flex-direction:column;gap:8px;text-align:left}
+.nickname-box label{font-weight:900;color:#40506a}
+.nickname-input{width:100%;padding:15px 18px;border:2px solid var(--border);border-radius:16px;background:#fff;color:var(--text);font:inherit;font-size:1.15rem;font-weight:800;outline:none}
+.nickname-input:focus{border-color:var(--primary);box-shadow:0 0 0 4px rgba(53,106,230,.10)}
+.nickname-help{font-size:.9rem;color:var(--muted);min-height:1.2em;text-align:center}
+.primary-btn,.secondary-btn{border:0;border-radius:17px;padding:16px 26px;font-weight:900;cursor:pointer;transition:transform .1s ease,filter .1s ease,opacity .1s ease}
+.primary-btn{background:var(--primary);color:#fff;font-size:1.16rem;box-shadow:0 7px 18px rgba(53,106,230,.24)}
+.primary-btn:hover{background:var(--primary-dark)}
+.secondary-btn{background:#edf3ff;color:#244c9c;border:2px solid #cbdafb;font-size:1.05rem}
+button:active{transform:scale(.97)}
+button:disabled{opacity:.42;cursor:not-allowed;transform:none}
+.game-screen{flex:1;display:flex;flex-direction:column;gap:10px}
+.game-top{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px}
+.progress{font-weight:950;font-size:clamp(1rem,2vw,1.25rem)}
+.question-guide{font-size:clamp(1.2rem,2.6vw,1.8rem);font-weight:950;text-align:center;letter-spacing:-.03em}
+.timer-wrap{display:flex;align-items:center;justify-content:flex-end;gap:10px}.timer{text-align:right;font-variant-numeric:tabular-nums;font-weight:950;font-size:clamp(1rem,2vw,1.25rem)}.quit-btn{border:1px solid #d6deeb;background:#fff;color:#667085;border-radius:12px;padding:8px 12px;font-weight:900;cursor:pointer;white-space:nowrap}.quit-btn:hover{background:#f5f7fb}
+.play-area{flex:1;display:grid;grid-template-rows:minmax(230px,1fr) minmax(280px,1fr);gap:12px;min-height:0}
+.problem-panel{position:relative;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:center;gap:22px;background:linear-gradient(180deg,#fbfdff,#f4f8ff);border:1px solid #e2e9f5;border-radius:22px;padding:clamp(14px,2.5vw,28px);overflow:hidden}
+.problem-side,.answer-side{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:13px;min-width:0}
+.panel-label{font-weight:900;color:var(--muted);font-size:clamp(.88rem,1.6vw,1rem)}
+.problem-display{min-height:112px;display:flex;align-items:center;justify-content:center;font-size:clamp(3rem,7vw,5.8rem);font-weight:1000;letter-spacing:-.045em;white-space:nowrap}
+.answer-display{min-height:112px;display:flex;align-items:center;justify-content:center;width:100%}
+.decimal-answer{width:min(330px,90%);min-height:92px;border:4px solid var(--border);border-radius:20px;background:#fff;display:flex;align-items:center;justify-content:center;font-size:clamp(2.4rem,6vw,4.6rem);font-weight:1000;font-variant-numeric:tabular-nums;cursor:pointer}
+.decimal-answer.active{border-color:var(--primary);background:#f1f6ff;box-shadow:0 0 0 5px rgba(53,106,230,.11)}
+.mixed-answer{display:flex;align-items:center;justify-content:center;gap:clamp(10px,2vw,20px);width:100%}
+.whole-wrap{display:flex;align-items:center;gap:8px}
+.and-text{font-size:clamp(1.15rem,2.5vw,1.55rem);font-weight:900;color:#40506a}
+.input-box{min-width:86px;min-height:76px;padding:8px 10px;border:4px solid var(--border);border-radius:17px;background:#fff;display:flex;align-items:center;justify-content:center;font-size:clamp(1.75rem,4vw,3rem);font-weight:1000;font-variant-numeric:tabular-nums;cursor:pointer}
+.input-box.active{border-color:var(--primary);background:#f1f6ff;box-shadow:0 0 0 5px rgba(53,106,230,.11)}
+.fraction{display:inline-grid;grid-template-rows:auto 4px auto;align-items:center;justify-items:center;min-width:110px;vertical-align:middle}
+.fraction .num,.fraction .den{padding:3px 12px;font-weight:1000;line-height:1.05}
+.problem-display .fraction{min-width:135px}
+.problem-display .fraction .num,.problem-display .fraction .den{font-size:clamp(2.4rem,5.7vw,4.8rem)}
+.frac-line{height:4px;width:100%;background:currentColor;border-radius:999px}
+.answer-fraction{min-width:112px}
+.answer-fraction .input-box{border-radius:14px;min-width:112px;min-height:58px;font-size:clamp(1.45rem,3.2vw,2.35rem)}
+.answer-fraction .frac-line{margin:5px 0;height:4px}
+.mixed-problem{display:flex;align-items:center;gap:14px}
+.mixed-problem .whole{font-size:clamp(2.8rem,6.5vw,5.2rem);font-weight:1000}
+.mixed-problem .and{font-size:clamp(1.1rem,2vw,1.4rem);font-weight:900}
+.feedback{position:absolute;inset:0;pointer-events:none;display:flex;align-items:center;justify-content:center;font-size:clamp(4rem,12vw,8rem);font-weight:1000;opacity:0;transform:scale(.65);z-index:5}
+.feedback.show-good{animation:goodPop .34s ease-out}
+.feedback.show-bad{animation:badPop .38s ease-out}
+@keyframes goodPop{0%{opacity:0;transform:scale(.65)}35%{opacity:.95;transform:scale(1.08)}100%{opacity:0;transform:scale(1.2)}}
+@keyframes badPop{0%{opacity:0;transform:translateX(0) scale(.8)}25%{opacity:.95;transform:translateX(-12px) scale(1)}50%{transform:translateX(12px) scale(1)}75%{transform:translateX(-7px) scale(1)}100%{opacity:0;transform:translateX(0) scale(1.05)}}
+.penalty-badge,.need-badge{position:absolute;top:14px;right:16px;border-radius:999px;padding:8px 12px;font-weight:950;opacity:0;transform:translateY(-6px);z-index:6}
+.penalty-badge{background:#fff0f0;color:var(--bad);border:1px solid #ffcaca}
+.need-badge{background:#fff8df;color:#8a6800;border:1px solid #f2d983}
+.penalty-badge.show,.need-badge.show{animation:badge .8s ease}
+@keyframes badge{0%{opacity:0;transform:translateY(-8px)}20%,72%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-4px)}}
+.keypad-panel{display:grid;grid-template-columns:minmax(0,1fr) minmax(160px,.42fr);gap:12px;background:#f7f9fe;border:1px solid #e2e9f5;border-radius:22px;padding:12px}
+.number-pad{display:grid;grid-template-columns:repeat(5,1fr);grid-template-rows:repeat(2,1fr);gap:10px}
+.action-pad{display:grid;grid-template-columns:1fr;grid-template-rows:repeat(3,1fr);gap:10px}
+.key{border:2px solid #cbdafb;border-radius:18px;background:var(--key);color:var(--key-text);font-weight:1000;font-size:clamp(1.35rem,3vw,2.15rem);min-height:70px;cursor:pointer;box-shadow:0 5px 12px rgba(53,106,230,.08)}
+.key:hover{filter:brightness(.97)}
+.key.function{background:#fff;color:#40506a;border-color:#d6deeb;font-size:clamp(1rem,2vw,1.35rem)}
+.key.confirm{background:var(--primary);border-color:var(--primary);color:#fff}
+.key.dot{font-size:clamp(2.2rem,5vw,3.2rem);line-height:.7;padding-bottom:18px}.key.dot.disabled{opacity:.3;background:#e9edf4;color:#8791a2;border-color:#d8dee8}
+.result-owner{font-size:clamp(1.35rem,3vw,2rem);font-weight:950;color:#40506a}
+.result-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:min(830px,100%)}
+.stat{background:var(--soft);border:1px solid var(--border);border-radius:18px;padding:16px}
+.stat strong{display:block;font-size:clamp(1.45rem,3vw,2.15rem);font-variant-numeric:tabular-nums}
+.stat span{color:var(--muted);font-weight:800;font-size:.92rem}
+.stat.penalty strong{color:var(--bad)}
+.result-detail{color:var(--muted);font-weight:800}
+.result-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.app-controls{display:none}
+.app-footer{display:flex;justify-content:space-between;gap:12px;color:var(--muted);font-size:.92rem}
+.hidden{display:none!important}
+@media(max-width:760px){
+  .miniapp{padding:8px;gap:7px}
+  .app-header{align-items:flex-start}
+  .title-group h1{font-size:clamp(1.45rem,6vw,2rem)}
+  .title-group p,.app-tag{display:none}
+  .activity-card{min-height:calc(100vh - 72px);padding:10px;border-radius:18px}
+  .game-screen{gap:7px}
+  .game-top{grid-template-columns:1fr 1fr;gap:4px 10px}
+  .question-guide{grid-column:1/-1;grid-row:1;font-size:1.15rem}
+  .progress{grid-row:2;font-size:.95rem}
+  .timer-wrap{grid-row:2;font-size:.95rem}.timer{font-size:.95rem}.quit-btn{padding:6px 9px;font-size:.82rem}
+  .play-area{grid-template-rows:minmax(225px,.9fr) minmax(315px,1.1fr);gap:8px}
+  .problem-panel{grid-template-columns:1fr;grid-template-rows:1fr 1fr;gap:6px;padding:9px}
+  .problem-side,.answer-side{gap:4px}
+  .panel-label{font-size:.78rem}
+  .problem-display,.answer-display{min-height:74px}
+  .problem-display{font-size:clamp(2.4rem,13vw,4rem)}
+  .problem-display .fraction .num,.problem-display .fraction .den{font-size:clamp(2rem,10vw,3.3rem)}
+  .mixed-problem .whole{font-size:clamp(2.2rem,11vw,3.5rem)}
+  .decimal-answer{min-height:65px;font-size:clamp(2rem,11vw,3.2rem)}
+  .input-box{min-width:66px;min-height:56px;font-size:clamp(1.4rem,7vw,2rem);border-width:3px}
+  .answer-fraction{min-width:84px}
+  .answer-fraction .input-box{min-width:84px;min-height:43px;font-size:clamp(1.2rem,6vw,1.7rem)}
+  .and-text{font-size:1rem}
+  .keypad-panel{grid-template-columns:1fr;grid-template-rows:1fr auto;padding:8px;gap:8px}
+  .number-pad{grid-template-columns:repeat(5,1fr);grid-template-rows:repeat(2,1fr);gap:6px}
+  .action-pad{grid-template-columns:repeat(3,1fr);grid-template-rows:1fr;gap:6px}
+  .key{min-height:61px;border-radius:14px;font-size:1.45rem;padding:4px}
+  .key.function{font-size:1rem}
+  .rule-box,.result-stats{grid-template-columns:1fr}
+  .rule{padding:10px}
+  .start-screen,.result-screen{gap:12px}
+  .start-icon{font-size:3.5rem}
+  .app-footer{display:none}
+}
+@media(max-width:390px){
+  .play-area{grid-template-rows:minmax(215px,.85fr) minmax(300px,1.15fr)}
+  .key{min-height:56px}
+  .mixed-answer{gap:6px}
+  .whole-wrap{gap:4px}
+}
+</style>
+</head>
+<body>
+<div class="miniapp">
+<header class="app-header">
+  <div class="title-group">
+    <h1 id="appTitle">소수·분수 스피드 퀴즈</h1>
+    <p id="appSubtitle">20문제 기록 도전</p>
+  </div>
+  <div class="app-tag" id="appTag">수학 · 직접 입력형 타임어택 퀴즈</div>
+</header>
+
+<main class="app-main">
+<section class="activity-card" id="activityArea">
+  <div class="start-screen" id="startScreen">
+    <div class="start-icon">0.5 ↔ ⁵⁄₁₀</div>
+    <h2>소수와 분수를 서로 바꿔 보세요!</h2>
+    <div class="rule-box">
+      <div class="rule">20문제 기록 도전</div>
+      <div class="rule">오답 1회 = +5초</div>
+    </div>
+    <div class="nickname-box">
+      <label for="nicknameInput">도전자 닉네임을 입력하세요</label>
+      <input id="nicknameInput" class="nickname-input" maxlength="12" autocomplete="off" placeholder="닉네임을 입력하세요" />
+      <div class="nickname-help" id="nicknameHelp">닉네임을 입력하면 게임을 시작할 수 있어요.</div>
+    </div>
+    <button class="primary-btn" id="startButton" disabled>게임 시작</button>
+  </div>
+
+  <div class="game-screen hidden" id="gameScreen">
+    <div class="game-top">
+      <div class="progress" id="progressText">1 / 20</div>
+      <div class="question-guide" id="questionGuide">소수를 분수로 바꾸세요</div>
+      <div class="timer-wrap"><div class="timer" id="timerText">0.0초</div><button class="quit-btn" id="quitButton">그만하기</button></div>
+    </div>
+
+    <div class="play-area">
+      <div class="problem-panel">
+        <div class="problem-side">
+          <div class="panel-label">문제</div>
+          <div class="problem-display" id="problemDisplay"></div>
+        </div>
+        <div class="answer-side">
+          <div class="panel-label">답</div>
+          <div class="answer-display" id="answerDisplay"></div>
+        </div>
+        <div class="feedback" id="feedback"></div>
+        <div class="penalty-badge" id="penaltyBadge">+5초</div>
+        <div class="need-badge" id="needBadge">입력을 확인하세요</div>
+      </div>
+
+      <div class="keypad-panel">
+        <div class="number-pad" id="numberPad">
+          <button class="key" data-key="1">1</button><button class="key" data-key="2">2</button>
+          <button class="key" data-key="3">3</button><button class="key" data-key="4">4</button>
+          <button class="key" data-key="5">5</button><button class="key" data-key="6">6</button>
+          <button class="key" data-key="7">7</button><button class="key" data-key="8">8</button>
+          <button class="key" data-key="9">9</button><button class="key" data-key="0">0</button>
+        </div>
+        <div class="action-pad">
+          <button class="key function dot" id="dotKey" data-action="dot">.</button>
+          <button class="key function" data-action="backspace">한 칸 지움</button>
+          <button class="key function confirm" data-action="submit">확인</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="result-screen hidden" id="resultScreen">
+    <div class="result-owner" id="resultOwner">도전자의 기록</div>
+    <h2 id="resultTitle">완주!</h2>
+    <div class="result-stats">
+      <div class="stat"><strong id="finalTime">0.0초</strong><span>내 기록</span></div>
+      <div class="stat penalty"><strong id="penaltyTime">+0초</strong><span>페널티</span></div>
+      <div class="stat"><strong id="accuracy">100%</strong><span>정답률(첫 시도)</span></div>
+    </div>
+    <div class="result-detail" id="resultDetail">실제 0.0초 · 오답 0회</div>
+    <div class="result-actions">
+      <button class="primary-btn" id="retryButton">다시 도전</button>
+      <button class="secondary-btn" id="captureButton">기록 이미지 저장</button>
+    </div>
+  </div>
+</section>
+</main>
+
+<section class="app-controls" id="controlArea"></section>
+<footer class="app-footer">
+  <div class="status-message" id="statusMessage">준비됨</div>
+  <div id="storageMessage">기록은 온라인으로 전송되지 않습니다.</div>
+</footer>
+</div>
+
+<script>
+const MINI_APP_INFO = {
+  id: "decimal-fraction-speed-quiz",
+  number: "06",
+  title: "소수·분수 스피드 퀴즈",
+  subtitle: "20문제 기록 도전",
+  subject: "수학",
+  grade: ["4"],
+  topic: "소수의 자릿값과 소수·분수의 상호 변환",
+  activityType: "직접 입력형 타임어택 퀴즈",
+  lessonPhase: ["전개", "정리"],
+  description: "소수의 자릿값을 이용해 소수와 분수를 서로 바꾸어 직접 입력하는 20문제 타임어택 퀴즈입니다.",
+  version: "1.2.0",
+  storageKey: "miniapps.decimalFractionSpeedQuiz.v1"
+};
+
+const TOTAL = 20;
+const PENALTY_SECONDS = 5;
+const DENOMINATORS = [10,100,1000,10000];
+const MAX_WHOLE = 9;
+const MIXED_PROBABILITY = 0.38;
+
+let state = {
+  mode:"ready",
+  questions:[],
+  index:0,
+  wrong:0,
+  firstTryCorrect:0,
+  wrongOnCurrent:0,
+  startedAt:0,
+  endedAt:0,
+  locked:false,
+  nickname:"",
+  activeField:"decimal",
+  inputs:{decimal:"",whole:"",numerator:"",denominator:""},
+  result:null,
+  message:"준비됨"
+};
+let timerRaf = null;
+
+const $ = id => document.getElementById(id);
+
+function initApp(){
+  loadState();
+  bindEvents();
+  render();
+}
+
+function loadState(){
+  try{
+    const saved=JSON.parse(localStorage.getItem(MINI_APP_INFO.storageKey)||"null");
+    if(saved && typeof saved.nickname==="string"){
+      state.nickname=saved.nickname;
+      $("nicknameInput").value=state.nickname;
+    }
+  }catch(error){ console.warn("저장 데이터를 불러오지 못했습니다.",error); }
+}
+
+function saveState(){
+  try{
+    localStorage.setItem(MINI_APP_INFO.storageKey,JSON.stringify({
+      nickname:state.nickname,
+      updatedAt:new Date().toISOString()
+    }));
+  }catch(error){ console.warn("저장하지 못했습니다.",error); }
+}
+
+function render(){
+  document.title=`${MINI_APP_INFO.number}. ${MINI_APP_INFO.title}`;
+  $("appTitle").textContent=MINI_APP_INFO.title;
+  $("appSubtitle").textContent=MINI_APP_INFO.subtitle;
+  $("appTag").textContent=`${MINI_APP_INFO.subject} · ${MINI_APP_INFO.activityType}`;
+  $("statusMessage").textContent=state.message;
+  validateNickname();
+  if(state.mode==="playing") renderActivity();
+  renderControls();
+}
+
+function renderControls(){
+  const playing=state.mode==="playing";
+  document.querySelectorAll(".key").forEach(btn=>btn.disabled=!playing);
+  if(playing){
+    const q=currentQuestion();
+    $("dotKey").disabled=q.direction!=="fractionToDecimal";
+    $("dotKey").classList.toggle("disabled",q.direction!=="fractionToDecimal");
+  }
+}
+
+function bindEvents(){
+  $("startButton").addEventListener("click",startNewGame);
+  $("retryButton").addEventListener("click",startNewGame);
+  $("captureButton").addEventListener("click",saveResultImage);
+  $("quitButton").addEventListener("click",quitGame);
+  $("nicknameInput").addEventListener("input",()=>{
+    state.nickname=$("nicknameInput").value.trim();
+    saveState(); validateNickname();
+  });
+  $("nicknameInput").addEventListener("keydown",e=>{
+    if(e.key==="Enter" && !$("startButton").disabled) startNewGame();
+  });
+  document.querySelectorAll("[data-key]").forEach(btn=>{
+    btn.addEventListener("click",()=>appendCharacter(btn.dataset.key));
+  });
+  document.querySelectorAll("[data-action]").forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      const a=btn.dataset.action;
+      if(a==="dot") appendDot();
+      if(a==="backspace") eraseLast();
+      if(a==="submit") submitAnswer();
+    });
+  });
+  document.addEventListener("keydown",handlePhysicalKeyboard);
+}
+
+function validateNickname(){
+  const name=$("nicknameInput").value.trim();
+  $("startButton").disabled=!name;
+  $("nicknameHelp").textContent=name?`${name} 님, 준비되면 시작하세요!`:"닉네임을 입력하면 게임을 시작할 수 있어요.";
+}
+
+function startNewGame(){
+  const nickname=$("nicknameInput").value.trim()||state.nickname;
+  if(!nickname){
+    $("nicknameHelp").textContent="닉네임을 먼저 입력해 주세요.";
+    $("nicknameInput").focus(); return;
+  }
+  if(timerRaf) cancelAnimationFrame(timerRaf);
+  state={
+    ...state,
+    mode:"playing",questions:buildQuestionSet(),index:0,wrong:0,firstTryCorrect:0,
+    wrongOnCurrent:0,startedAt:performance.now(),endedAt:0,locked:false,nickname,
+    activeField:"decimal",inputs:blankInputs(),result:null,message:"도전 중"
+  };
+  state.activeField=currentQuestion().direction==="fractionToDecimal"?"decimal":"denominator";
+  saveState();
+  $("startScreen").classList.add("hidden");
+  $("resultScreen").classList.add("hidden");
+  $("gameScreen").classList.remove("hidden");
+  renderActivity();
+  tickTimer();
+}
+
+function blankInputs(){ return {decimal:"",whole:"",numerator:"",denominator:""}; }
+
+function buildQuestionSet(){
+  // 분모 4종 × 5문제를 먼저 만든 뒤, 전체 20자리 중 정확히 10자리를 소수→분수로 배정한다.
+  const denominatorSlots=[];
+  DENOMINATORS.forEach(d=>{ for(let i=0;i<5;i++) denominatorSlots.push(d); });
+  const directions=shuffle([
+    ...Array(10).fill("decimalToFraction"),
+    ...Array(10).fill("fractionToDecimal")
+  ]);
+  const used=new Set();
+  const questions=[];
+  let mixedCount=0;
+
+  denominatorSlots.forEach((denominator,i)=>{
+    let q;
+    for(let tries=0;tries<300;tries++){
+      const forceMixed=(i===denominatorSlots.length-1 && mixedCount===0);
+      q=makeQuestion(directions[i],denominator,forceMixed);
+      const key=`${q.direction}|${q.decimalText}|${q.whole}|${q.numerator}|${q.denominator}`;
+      if(!used.has(key)){
+        used.add(key); break;
+      }
+      q=null;
+    }
+    if(!q) throw new Error("중복 없는 문제 세트를 생성하지 못했습니다.");
+    if(q.whole>0) mixedCount++;
+    questions.push(q);
+  });
+  return shuffle(questions);
+}
+
+function makeQuestion(direction,denominator,forceMixed=false){
+  const digits=String(denominator).length-1;
+  const mixed=forceMixed || Math.random()<MIXED_PROBABILITY;
+  const whole=mixed?randomInt(1,MAX_WHOLE):0;
+
+  // 0은 분수 부분 학습을 없애므로 제외한다. denominator보다 작은 진분수만 만든다.
+  const numerator=randomInt(1,denominator-1);
+  const fractionDigits=String(numerator).padStart(digits,"0");
+  const decimalText=`${whole}.${fractionDigits}`;
+
+  return {
+    direction,denominator,digits,whole,numerator,decimalText,
+    expectedDecimal:decimalText,
+    expectedWhole:String(whole),
+    expectedNumerator:String(numerator),
+    expectedDenominator:String(denominator)
+  };
+}
+
+function currentQuestion(){ return state.questions[state.index]; }
+
+function renderActivity(){
+  if(state.mode!=="playing") return;
+  const q=currentQuestion();
+  $("progressText").textContent=`${state.index+1} / ${TOTAL}`;
+  $("questionGuide").textContent=q.direction==="decimalToFraction"?"소수를 분수로 바꾸세요":"분수를 소수로 바꾸세요";
+  renderProblem(q);
+  renderAnswer(q);
+  renderControls();
+}
+
+function renderProblem(q){
+  if(q.direction==="decimalToFraction"){
+    $("problemDisplay").textContent=q.decimalText;
+    return;
+  }
+  const frac=fractionHTML(q.numerator,q.denominator);
+  $("problemDisplay").innerHTML=q.whole>0
+    ? `<span class="mixed-problem"><span class="whole">${q.whole}</span><span class="and">와</span>${frac}</span>`
+    : frac;
+}
+
+function fractionHTML(num,den){
+  return `<span class="fraction" aria-label="${num}분의 ${den}">
+    <span class="num">${num}</span><span class="frac-line"></span><span class="den">${den}</span>
+  </span>`;
+}
+
+function renderAnswer(q){
+  const area=$("answerDisplay");
+  if(q.direction==="fractionToDecimal"){
+    if(!["decimal"].includes(state.activeField)) state.activeField="decimal";
+    area.innerHTML=`<div class="decimal-answer ${state.activeField==="decimal"?"active":""}" data-field="decimal">${escapeText(state.inputs.decimal)||"&nbsp;"}</div>`;
+  }else{
+    if(!["whole","numerator","denominator"].includes(state.activeField)) state.activeField="denominator";
+    area.innerHTML=`
+      <div class="mixed-answer">
+        <div class="whole-wrap">
+          <div class="input-box ${state.activeField==="whole"?"active":""}" data-field="whole">${escapeText(state.inputs.whole)||"&nbsp;"}</div>
+          <span class="and-text">와</span>
+        </div>
+        <div class="fraction answer-fraction">
+          <div class="input-box ${state.activeField==="numerator"?"active":""}" data-field="numerator">${escapeText(state.inputs.numerator)||"&nbsp;"}</div>
+          <span class="frac-line"></span>
+          <div class="input-box ${state.activeField==="denominator"?"active":""}" data-field="denominator">${escapeText(state.inputs.denominator)||"&nbsp;"}</div>
+        </div>
+      </div>`;
+  }
+  area.querySelectorAll("[data-field]").forEach(el=>{
+    el.addEventListener("click",()=>{
+      state.activeField=el.dataset.field;
+      renderAnswer(q);
+    });
+  });
+}
+
+function appendCharacter(ch){
+  if(state.mode!=="playing"||state.locked) return;
+  const q=currentQuestion();
+  const field=q.direction==="fractionToDecimal"?"decimal":state.activeField;
+  if(field==="decimal"){
+    if(state.inputs.decimal.length>=8) return;
+    state.inputs.decimal+=ch;
+  }else{
+    if(!["whole","numerator","denominator"].includes(field)) return;
+    if(state.inputs[field].length>=5) return;
+    state.inputs[field]+=ch;
+  }
+  renderAnswer(q);
+}
+
+function appendDot(){
+  if(state.mode!=="playing"||state.locked) return;
+  const q=currentQuestion();
+  if(q.direction!=="fractionToDecimal") return;
+  if(state.inputs.decimal.includes(".")) return;
+  if(state.inputs.decimal==="") state.inputs.decimal="0";
+  state.inputs.decimal+=".";
+  renderAnswer(q);
+}
+
+function eraseLast(){
+  if(state.mode!=="playing"||state.locked) return;
+  const q=currentQuestion();
+  const field=q.direction==="fractionToDecimal"?"decimal":state.activeField;
+  if(!field||!(field in state.inputs)) return;
+  state.inputs[field]=state.inputs[field].slice(0,-1);
+  renderAnswer(q);
+}
+
+function submitAnswer(){
+  if(state.mode!=="playing"||state.locked) return;
+  const q=currentQuestion();
+  if(!isSubmittable(q)){ showNeedInput(); return; }
+
+  const correct=isCorrect(q);
+  if(!correct){
+    state.wrong++;
+    state.wrongOnCurrent++;
+    showFeedback(false);
+    state.message=`오답 ${state.wrong}회 · 페널티 +${state.wrong*PENALTY_SECONDS}초`;
+    $("statusMessage").textContent=state.message;
+    return;
+  }
+
+  if(state.wrongOnCurrent===0) state.firstTryCorrect++;
+  state.locked=true;
+  showFeedback(true);
+  setTimeout(()=>{
+    state.index++;
+    if(state.index>=TOTAL) finishGame();
+    else{
+      state.wrongOnCurrent=0;
+      state.locked=false;
+      state.inputs=blankInputs();
+      state.activeField=currentQuestion().direction==="fractionToDecimal"?"decimal":"denominator";
+      renderActivity();
+    }
+  },300);
+}
+
+function isSubmittable(q){
+  if(q.direction==="fractionToDecimal") return state.inputs.decimal.trim()!=="";
+  // 1 미만 소수는 자연수칸 빈칸을 허용한다. 그 외에는 자연수칸도 필수.
+  const wholeOkay=q.whole===0 || state.inputs.whole.trim()!=="";
+  return wholeOkay && state.inputs.numerator.trim()!=="" && state.inputs.denominator.trim()!=="";
+}
+
+function normalizedIntegerText(s){
+  if(s==="") return "";
+  const n=Number(s);
+  return Number.isInteger(n)?String(n):s;
+}
+
+function isCorrect(q){
+  if(q.direction==="fractionToDecimal"){
+    // Number 동치 판정이 아니라 표시 자릿수까지 정확히 같은 문자열만 정답.
+    return state.inputs.decimal===q.expectedDecimal;
+  }
+  const wholeInput=state.inputs.whole.trim()===""?"0":normalizedIntegerText(state.inputs.whole);
+  const numeratorInput=normalizedIntegerText(state.inputs.numerator);
+  const denominatorInput=normalizedIntegerText(state.inputs.denominator);
+  return wholeInput===q.expectedWhole &&
+         numeratorInput===q.expectedNumerator &&
+         denominatorInput===q.expectedDenominator;
+}
+
+function showFeedback(good){
+  const f=$("feedback");
+  f.textContent=good?"✓":"✕";
+  f.style.color=good?"var(--good)":"var(--bad)";
+  f.className="feedback"; void f.offsetWidth;
+  f.classList.add(good?"show-good":"show-bad");
+  if(!good){
+    const p=$("penaltyBadge");
+    p.classList.remove("show"); void p.offsetWidth; p.classList.add("show");
+  }
+}
+
+function showNeedInput(){
+  const n=$("needBadge");
+  n.classList.remove("show"); void n.offsetWidth; n.classList.add("show");
+}
+
+function tickTimer(){
+  if(state.mode!=="playing") return;
+  const elapsed=(performance.now()-state.startedAt)/1000;
+  $("timerText").textContent=`${elapsed.toFixed(1)}초`;
+  timerRaf=requestAnimationFrame(tickTimer);
+}
+
+function finishGame(){
+  state.mode="result";
+  state.endedAt=performance.now();
+  if(timerRaf) cancelAnimationFrame(timerRaf);
+  const raw=(state.endedAt-state.startedAt)/1000;
+  const penalty=state.wrong*PENALTY_SECONDS;
+  const final=raw+penalty;
+  const acc=Math.round((state.firstTryCorrect/TOTAL)*100);
+  state.result={raw,penalty,final,acc};
+
+  $("gameScreen").classList.add("hidden");
+  $("resultScreen").classList.remove("hidden");
+  $("resultOwner").textContent=`${state.nickname}의 기록`;
+  $("finalTime").textContent=`${final.toFixed(1)}초`;
+  $("penaltyTime").textContent=`+${penalty}초`;
+  $("accuracy").textContent=`${acc}%`;
+  $("resultDetail").textContent=`실제 ${raw.toFixed(1)}초 · 오답 ${state.wrong}회`;
+  $("resultTitle").textContent=state.wrong===0?"완벽한 완주!":"완주!";
+  state.message=`${state.nickname} · 기록 ${final.toFixed(1)}초`;
+  $("statusMessage").textContent=state.message;
+}
+
+function quitGame(){
+  if(state.mode!=="playing") return;
+  if(!confirm("게임을 그만하고 시작 화면으로 돌아갈까요?")) return;
+  if(timerRaf) cancelAnimationFrame(timerRaf);
+  state.mode="ready"; state.locked=false; state.questions=[]; state.index=0; state.inputs=blankInputs(); state.message="게임을 종료했습니다.";
+  $("gameScreen").classList.add("hidden");
+  $("resultScreen").classList.add("hidden");
+  $("startScreen").classList.remove("hidden");
+  $("statusMessage").textContent=state.message;
+  validateNickname();
+}
+
+function handlePhysicalKeyboard(e){
+  if(state.mode!=="playing") return;
+  if(/^[0-9]$/.test(e.key)){ e.preventDefault(); appendCharacter(e.key); return; }
+  if(e.key==="."){ e.preventDefault(); appendDot(); return; }
+  if(e.key==="Backspace"){ e.preventDefault(); eraseLast(); return; }
+  if(e.key==="Enter"){ e.preventDefault(); submitAnswer(); }
+}
+
+function saveResultImage(){
+  if(!state.result) return;
+  const canvas=document.createElement("canvas");
+  canvas.width=1200; canvas.height=675;
+  const ctx=canvas.getContext("2d");
+  ctx.fillStyle="#eef4ff"; ctx.fillRect(0,0,1200,675);
+  ctx.fillStyle="#fff"; roundRect(ctx,90,65,1020,545,36); ctx.fill();
+  ctx.textAlign="center";
+  ctx.fillStyle="#172033"; ctx.font="900 44px system-ui, sans-serif";
+  ctx.fillText("소수·분수 스피드 퀴즈",600,135);
+  ctx.fillStyle="#40506a"; ctx.font="900 38px system-ui, sans-serif";
+  ctx.fillText(`${state.nickname}의 기록`,600,205);
+
+  const cards=[
+    {x:155,label:"내 기록",value:`${state.result.final.toFixed(1)}초`,color:"#356ae6"},
+    {x:455,label:"페널티",value:`+${state.result.penalty}초`,color:"#d04444"},
+    {x:755,label:"정답률(첫 시도)",value:`${state.result.acc}%`,color:"#16845b"}
+  ];
+  cards.forEach(c=>{
+    ctx.fillStyle="#f5f8ff"; roundRect(ctx,c.x,260,290,180,24); ctx.fill();
+    ctx.fillStyle=c.color; ctx.font="1000 48px system-ui, sans-serif"; ctx.fillText(c.value,c.x+145,335);
+    ctx.fillStyle="#667085"; ctx.font="800 25px system-ui, sans-serif"; ctx.fillText(c.label,c.x+145,392);
+  });
+  ctx.fillStyle="#667085"; ctx.font="800 26px system-ui, sans-serif";
+  ctx.fillText(`실제 ${state.result.raw.toFixed(1)}초 · 오답 ${state.wrong}회 · 20문제`,600,510);
+  ctx.font="700 21px system-ui, sans-serif"; ctx.fillText("소수의 자릿값에 맞게 정확히 바꾸기",600,565);
+
+  const link=document.createElement("a");
+  const safe=state.nickname.replace(/[\\/:*?"<>|]/g,"_");
+  link.download=`소수분수스피드퀴즈_${safe}_${state.result.final.toFixed(1)}초.png`;
+  link.href=canvas.toDataURL("image/png");
+  document.body.appendChild(link); link.click(); link.remove();
+}
+
+function roundRect(ctx,x,y,w,h,r){
+  const rr=Math.min(r,w/2,h/2);
+  ctx.beginPath(); ctx.moveTo(x+rr,y);
+  ctx.arcTo(x+w,y,x+w,y+h,rr); ctx.arcTo(x+w,y+h,x,y+h,rr);
+  ctx.arcTo(x,y+h,x,y,rr); ctx.arcTo(x,y,x+w,y,rr); ctx.closePath();
+}
+
+function resetAll(){
+  if(!confirm("저장된 닉네임을 초기화할까요?")) return;
+  localStorage.removeItem(MINI_APP_INFO.storageKey);
+  state.nickname="";
+  $("nicknameInput").value="";
+  state.message="초기화됨";
+  render();
+}
+
+function randomInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+function shuffle(arr){
+  const a=[...arr];
+  for(let i=a.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+function escapeText(s){
+  return String(s).replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[ch]));
+}
+
+initApp();
+</script>
+</body>
+</html>
