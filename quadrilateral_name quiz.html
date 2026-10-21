@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>사각형 탐정 — 성질로 찾는 이름</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#e9eef4;color:#203047;font-family:system-ui,'Malgun Gothic',sans-serif}button,input{font:inherit}button,label{touch-action:manipulation}main{width:min(100vw,177.777vh);min-height:min(100vh,56.25vw);aspect-ratio:16/9;margin:auto;background:#f7f9fc;padding:2.4%;display:flex;flex-direction:column;gap:18px}header{display:flex;justify-content:space-between;align-items:center}h1{font-size:clamp(22px,2.4vw,40px);margin:0}header p{margin:5px 0 0;color:#64748b;font-size:clamp(12px,1.1vw,18px)}#number{white-space:nowrap;font-weight:700;color:#52647b}.layout{display:grid;grid-template-columns:4fr 6fr;gap:24px;flex:1;min-height:0}.figure,.controls{border:1px solid #dbe3ed;border-radius:20px;background:white}.figure{display:flex;flex-direction:column;justify-content:center;padding:18px;position:relative}.figure h2{position:absolute;top:15px;left:22px;font-size:16px;color:#64748b;font-weight:500}svg{width:100%;max-height:450px;aspect-ratio:1/1;display:block}.figure p{text-align:center;font-size:14px;color:#64748b;margin:0}.controls{padding:22px;display:flex;flex-direction:column;gap:14px}.intro{font-size:clamp(17px,1.5vw,25px);font-weight:700;margin:0}.checks{display:grid;gap:10px}label{display:flex;align-items:center;gap:13px;border:2px solid #e2e8f0;border-radius:12px;padding:12px 14px;cursor:pointer;font-size:clamp(17px,1.65vw,28px);min-height:58px}label:has(input:checked){background:#edf5ff;border-color:#4386d1}input{width:26px;height:26px;accent-color:#2468b0;flex-shrink:0}label.wrong{border-color:#c97530;background:#fff6eb}label:has(input:disabled){cursor:default}.names{display:flex;flex-wrap:wrap;gap:7px}.name{border-radius:9px;background:#eef1f5;color:#718096;padding:8px 12px;font-size:clamp(14px,1.2vw,20px);font-weight:700}.name.active{color:#fff;background:#2468b0}#classification{margin:0;min-height:22px;font-size:14px;color:#52647b}.result{border-radius:12px;background:#f4f7fa;min-height:102px;padding:12px 15px;font-size:clamp(14px,1.15vw,19px);line-height:1.5}.result strong{display:block;font-size:1.15em}.result.success{background:#eaf6ef;color:#205b3b}.result.error{background:#fff3e7;color:#784515}.actions{display:flex;gap:12px;margin-top:auto}button{border:0;border-radius:12px;background:#2468b0;color:white;min-height:54px;padding:10px 24px;font-size:clamp(17px,1.5vw,25px);font-weight:700;cursor:pointer;flex:1}button.secondary{background:#e8eef5;color:#304a68}button:disabled{opacity:.4;cursor:default}button:focus-visible,label:focus-within{outline:3px solid #edaf46;outline-offset:3px}footer{font-size:clamp(11px,1vw,16px);color:#64748b;line-height:1.5}@media(max-width:850px){main{width:100%;aspect-ratio:auto;padding:16px}.layout{gap:12px}.controls{padding:14px}label{padding:10px;font-size:17px}.figure{padding:8px}.figure h2{position:static;margin:8px}header p{font-size:12px}.result{min-height:120px}}@media(max-width:570px){.layout{grid-template-columns:1fr}.figure svg{max-height:240px}.figure h2{display:none}header{gap:10px}.controls{gap:12px}}
+
+body{background:#0b111c;color:#e9eff8;color-scheme:dark}main{background:#101927;min-height:100vh}h1{color:#f0f5fc}#number{color:#a8bbd3}.figure,.controls{background:#182435;border-color:#2c3e54}.controls{gap:18px;padding:24px}.figure polygon{fill:#244b72;stroke:#8bc1ff}.checks{gap:14px}.question{display:flex;align-items:center;justify-content:space-between;gap:14px;border:1px solid #34465c;border-radius:12px;padding:14px 16px;min-height:80px;font-size:clamp(17px,1.65vw,28px)}.choices{display:flex;gap:8px;flex-shrink:0}.choice{flex:none;margin:0;padding:0;width:58px;min-height:54px;border:2px solid #486079;border-radius:10px;background:#202f43;color:#b7c7dc;font-size:30px;line-height:1}.choice[aria-pressed="true"]{background:#245fc3;border-color:#7bb4ff;color:white}.choice:disabled{opacity:1;cursor:default}.question.wrong{border-color:#e2a468;background:#3e3028}.name{background:#253246;color:#9bacc2;border:2px solid transparent;padding:10px 13px}.name.related{background:#a8cef5;color:#122f52;border-color:#a8cef5}.name.active{background:#175bd0;color:#fff;border-color:#5596ff}#classification{color:#e6b780;min-height:22px}.result{background:transparent;min-height:110px}.result:empty{visibility:hidden}.result.success{background:#183b32;color:#b5ead0}.result.error{background:#423125;color:#f6d2ae}.actions button{background:#2468d4}.actions button.secondary{background:#30425a;color:#edf4ff}button:disabled{opacity:.35}button:focus-visible{outline:3px solid #f2c565;outline-offset:3px}
+@media(max-width:1000px){.controls{padding:16px;gap:12px}.question{padding:10px;gap:8px;min-height:66px;font-size:17px}.choice{width:43px;min-height:46px;font-size:26px}.names{gap:5px}.name{font-size:14px;padding:8px}.result{font-size:14px;min-height:100px}}@media(max-width:570px){main{min-height:100vh}.question{font-size:16px}.figure svg{max-height:240px}}
+
+/* Mobile/tablet: keep primary actions visible without shrinking touch targets. */
+@media (max-width:850px), (max-height:680px) and (pointer:coarse){
+ main{width:100%;max-width:none;min-height:100dvh;height:100dvh;aspect-ratio:auto;padding:10px;gap:8px;overflow:hidden}
+ header{flex:0 0 auto}h1{font-size:clamp(19px,3vw,27px)}
+ .layout{flex:1;min-height:0;gap:8px;grid-template-columns:minmax(0,4fr) minmax(0,6fr)}
+ .figure,.controls{min-height:0;border-radius:12px}
+ .figure{padding:5px}.figure svg{max-height:100%;min-height:0}
+ .controls{padding:10px;gap:7px;overflow:hidden}
+ .checks{gap:5px}.question{min-height:0;padding:6px 8px;gap:6px;font-size:clamp(13px,1.9vw,18px)}
+ .choice{width:clamp(40px,5vw,48px);min-height:44px;font-size:24px}
+ .names{gap:4px}.name{font-size:12px;padding:5px 7px}
+ #classification{min-height:0;font-size:12px}
+ .result{min-height:0;overflow-y:auto;flex:0 1 auto;font-size:13px;padding:7px 9px}
+ .actions{flex:0 0 auto;gap:7px;margin-top:auto}
+ .actions button{min-height:46px;padding:7px 8px;font-size:clamp(14px,2vw,19px)}
+}
+@media (max-width:650px) and (orientation:portrait){
+ main{padding:7px;gap:5px}
+ header{padding:0 4px}
+ .layout{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(90px,24%) minmax(0,1fr);gap:5px}
+ .figure{padding:0;align-items:center}.figure svg{width:100%;height:100%;max-height:none;aspect-ratio:auto}
+ .controls{padding:7px;gap:4px;overflow:hidden}
+ .checks{gap:3px;min-height:0}
+ .question{padding:4px 7px;font-size:clamp(12px,3.1vw,16px);line-height:1.2}
+ .choices{gap:4px}.choice{width:42px;min-height:42px;font-size:23px}
+ .names{gap:3px}.name{font-size:clamp(11px,2.8vw,13px);padding:4px 6px}
+ #classification{font-size:11px;line-height:1.2}
+ .result{font-size:12px;line-height:1.3;padding:5px 7px;min-height:0;overflow-y:auto}
+ .actions{position:sticky;bottom:0;background:#182435;padding-top:4px;z-index:2}
+ .actions button{min-height:46px;font-size:15px}
+}
+@media (max-width:650px) and (orientation:portrait) and (max-height:650px){
+ .layout{grid-template-rows:minmax(65px,17%) minmax(0,1fr)}
+ .question{font-size:12px;padding:2px 5px}.choice{min-height:38px;width:39px}
+ .name{padding:3px 5px}.controls{gap:2px}
+}
+</style></head><body><main>
+<header><div><h1>사각형 탐정</h1></div><span id="number"></span></header>
+<div class="layout"><section class="figure" aria-label="문제 도형"><svg viewBox="0 0 400 400" role="img" aria-label="판별할 사각형"><polygon id="shape" fill="#deebfa" stroke="#285c96" stroke-width="5" stroke-linejoin="round"/></svg></section>
+<section class="controls" aria-label="성질 체크리스트"><div class="checks"><div class="question" role="group" aria-labelledby="q0"><span id="q0">① 평행한 변이 한 쌍 이상 있는가?</span><div class="choices"><button type="button" class="choice" data-row="0" data-value="1" aria-label="① 평행한 변이 한 쌍 이상 있는가? 예" aria-pressed="false">O</button><button type="button" class="choice" data-row="0" data-value="0" aria-label="① 평행한 변이 한 쌍 이상 있는가? 아니요" aria-pressed="false">X</button></div></div><div class="question" role="group" aria-labelledby="q1"><span id="q1">② 평행한 변이 두 쌍 있는가?</span><div class="choices"><button type="button" class="choice" data-row="1" data-value="1" aria-label="② 평행한 변이 두 쌍 있는가? 예" aria-pressed="false">O</button><button type="button" class="choice" data-row="1" data-value="0" aria-label="② 평행한 변이 두 쌍 있는가? 아니요" aria-pressed="false">X</button></div></div><div class="question" role="group" aria-labelledby="q2"><span id="q2">③ 네 변의 길이가 모두 같은가?</span><div class="choices"><button type="button" class="choice" data-row="2" data-value="1" aria-label="③ 네 변의 길이가 모두 같은가? 예" aria-pressed="false">O</button><button type="button" class="choice" data-row="2" data-value="0" aria-label="③ 네 변의 길이가 모두 같은가? 아니요" aria-pressed="false">X</button></div></div><div class="question" role="group" aria-labelledby="q3"><span id="q3">④ 네 각이 모두 직각인가?</span><div class="choices"><button type="button" class="choice" data-row="3" data-value="1" aria-label="④ 네 각이 모두 직각인가? 예" aria-pressed="false">O</button><button type="button" class="choice" data-row="3" data-value="0" aria-label="④ 네 각이 모두 직각인가? 아니요" aria-pressed="false">X</button></div></div></div><div class="names" aria-label="해당하는 사각형 이름"></div><p id="classification" aria-live="polite"></p><div class="result" id="result" role="status"></div><div class="actions"><button id="confirm">정답 확인</button><button id="next" class="secondary" disabled>다음 문제 →</button></div></section></div>
+
+</main><script>
+'use strict';
+// MiniApps 공통 도킹 메타데이터 (App Station 파일명 규격과 일치)
+const MINI_APP_INFO = {
+  id: "quadrilateral-detective",
+  number: "08",
+  title: "사각형 탐정",
+  subtitle: "성질로 찾는 사각형 이름",
+  subject: "수학",
+  grade: ["4"],
+  topic: "사각형의 성질과 포함 관계",
+  activityType: "O/X 도형 판별 게임",
+  lessonPhase: ["전개", "정리"],
+  description: "네 가지 성질을 O/X로 판단하여 사각형의 이름과 포함 관계를 알아보는 게임입니다.",
+  version: "1.0.0",
+  storageKey: "miniapps.quadrilateralDetective.v1"
+};
+
+// 현재 게임은 영속 저장이 필요하지 않으므로 공통 함수만 제공한다.
+function loadState() { /* 저장할 진행 상태 없음 */ }
+function saveState() { /* 저장할 진행 상태 없음 */ }
+function render() { /* 기존 next/update/check 함수가 화면을 갱신함 */ }
+function initApp() {
+  loadState();
+  document.title = MINI_APP_INFO.title + ' — ' + MINI_APP_INFO.subtitle;
+  render();
+  next();
+}
+const TYPES=[{name:'사다리꼴',bits:'1000'},{name:'평행사변형',bits:'1100'},{name:'마름모',bits:'1110'},{name:'직사각형',bits:'1101'},{name:'정사각형',bits:'1111'},{name:'해당 없음',bits:'0000'}];
+const answers=[null,null,null,null],choices=[...document.querySelectorAll('.choice')],labels=[...document.querySelectorAll('.question')],names=document.querySelector('.names'),result=document.querySelector('#result'),confirmButton=document.querySelector('#confirm'),nextButton=document.querySelector('#next');
+TYPES.forEach(t=>{const el=document.createElement('span');el.className='name';el.textContent=t.name;names.append(el)});
+let current,count=0,bag=[],locked=false,last=-1;
+const rand=(a,b)=>a+Math.random()*(b-a);
+function generate(type){let p;const w=rand(210,265),h=rand(125,165),s=rand(65,100);switch(type){case 0:{const l=rand(45,85),r=rand(40,85);p=[[0,0],[w,0],[w-r,h],[l,h]];break}case 1:p=[[0,0],[w,0],[w+s,h],[s,h]];break;case 2:{const side=rand(170,210),angle=rand(.83,1.10),x=side*Math.cos(angle),y=side*Math.sin(angle);p=[[0,0],[side,0],[side+x,y],[x,y]];break}case 3:p=[[0,0],[w,0],[w,h],[0,h]];break;case 4:{const a=rand(175,225);p=[[0,0],[a,0],[a,a],[0,a]];break}default:p=[[0,0],[rand(230,260),rand(20,40)],[rand(170,195),rand(175,195)],[rand(-35,-15),rand(110,135)]];}
+const cx=p.reduce((a,q)=>a+q[0],0)/4,cy=p.reduce((a,q)=>a+q[1],0)/4,angle=rand(0,Math.PI*2),scale=rand(.80,1);p=p.map(([x,y])=>[(x-cx)*Math.cos(angle)-(y-cy)*Math.sin(angle),(x-cx)*Math.sin(angle)+(y-cy)*Math.cos(angle)]);const max=Math.max(...p.flat().map(Math.abs));return p.map(([x,y])=>[200+x*150/max*scale,200+y*150/max*scale]);}
+function classify(bits){return TYPES.findIndex(t=>t.bits===bits)}
+const INCLUDED=[[0],[0,1],[0,1,2],[0,1,3],[0,1,2,3,4],[5]];
+function selection(){return answers.map(x=>x===null?'?':x).join('')}
+function update(){const complete=answers.every(x=>x!==null),index=complete?classify(selection()):-1;[...names.children].forEach((el,i)=>{el.classList.toggle('active',i===index);el.classList.toggle('related',index>=0&&i!==index&&INCLUDED[index].includes(i));});document.querySelector('#classification').textContent=complete&&index<0?'성립하지 않는 조합입니다.':'';confirmButton.disabled=locked||!complete;}
+function choose(row,value){if(locked)return;answers[row]=value;choices.forEach(b=>b.setAttribute('aria-pressed',String(answers[Number(b.dataset.row)]===b.dataset.value)));labels.forEach(x=>x.classList.remove('wrong'));result.className='result';result.textContent='';update();}
+function next(){if(!bag.length){bag=[0,1,2,3,4,5];for(let i=bag.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[bag[i],bag[j]]=[bag[j],bag[i]]}if(bag[bag.length-1]===last)[bag[0],bag[bag.length-1]]=[bag[bag.length-1],bag[0]];}current=bag.pop();last=current;locked=false;count++;document.querySelector('#number').textContent='문제 '+count;document.querySelector('#shape').setAttribute('points',generate(current).map(p=>p.join(',')).join(' '));answers.fill(null);choices.forEach(b=>{b.disabled=false;b.setAttribute('aria-pressed','false')});labels.forEach(x=>x.classList.remove('wrong'));confirmButton.disabled=true;nextButton.disabled=true;result.className='result';result.textContent='';update();}
+function check(){
+ if(locked||answers.some(x=>x===null))return;
+ const expected=TYPES[current].bits,actual=selection(),wrong=[];
+ labels.forEach(x=>x.classList.remove('wrong'));
+ answers.forEach((x,i)=>{
+  if(expected[i]!==actual[i]){
+   labels[i].classList.add('wrong');
+   wrong.push('①②③④'[i]+'：'+(expected[i]==='1'?'O':'X'));
+  }
+ });
+ const correct=wrong.length===0;
+ locked=correct;
+ if(correct)choices.forEach(b=>b.disabled=true);
+ result.className='result '+(correct?'success':'error');
+ const title=document.createElement('strong');
+ title.textContent=correct?'정답입니다!':'성질을 다시 확인해 보세요.';
+ const detail=document.createElement('span');
+ detail.textContent=correct
+  ?(current===5?'다섯 종류에 해당하지 않는 일반 사각형입니다.':'이 도형은 '+TYPES[current].name+'입니다.')
+  :'틀린 항목: '+wrong.join(' / ')+' · O/X를 고친 뒤 다시 정답 확인을 누르세요.';
+ result.replaceChildren(title,detail);
+ confirmButton.disabled=correct;
+ nextButton.disabled=!correct;
+}
+choices.forEach(b=>b.addEventListener('click',()=>choose(Number(b.dataset.row),b.dataset.value)));confirmButton.addEventListener('click',check);nextButton.addEventListener('click',next);initApp();
+</script></body></html>
